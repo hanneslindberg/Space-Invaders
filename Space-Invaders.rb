@@ -37,6 +37,7 @@ class Bullet
 
     def update
         @y += 20
+        @sound.play
     end
 
     def draw
