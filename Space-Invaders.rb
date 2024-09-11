@@ -59,6 +59,7 @@ class Game < Gosu::Window
         @ship.update(self)
         if button_down?(Gosu::KB_SPACE)
             @bullets << Bullet.new(@ship)
+
         end
     end
 
