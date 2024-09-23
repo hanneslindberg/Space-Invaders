@@ -92,6 +92,8 @@ class Game < Gosu::Window
             8.times do |n|
                 x = (180 + 90 * n)
                 y = (30 + 60 * i)
+                y = (40 + 80 * i)
+
                 @enemies << Enemy.new(x, y)
             end
         end
