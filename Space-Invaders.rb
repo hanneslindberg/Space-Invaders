@@ -11,6 +11,19 @@ class Ship
         @y = window.height - window.height * 0.1
         @vel_x = 7
         @vel_bullet = 50
+        @last_shot_time = Time.now - 1
+        @shot_cooldown = 0.3
+    end
+
+    def shoot
+        current_time = Time.now
+        if current_time - @last_shot_time >= @shot_cooldown 
+            @last_shot_time = current_time
+            @sound.play 
+            return Bullet.new(self)  
+        else
+            return nil 
+        end
     end
 
     def update(window)
@@ -32,10 +45,13 @@ class Bullet
         @image = Gosu::Image.new("img/bullet.png")
         @x = ship.x
         @y = ship.y
+
+        @speed = 2
+
     end
 
     def update
-        @y -= 20
+        @y -= @speed
     end
 
     def draw
@@ -84,13 +100,13 @@ class Game < Gosu::Window
 
     def update
         @ship.update(self)
-        if button_down?(Gosu::KB_SPACE)
-            @bullets << Bullet.new(@ship)
-        end
-        @bullets.each { |bullet| bullet.update }
 
-        # Uppdatera fiender (om de ska flyttas, men inget händer just nu)
-        @enemies.each { |enemy| enemy.update }
+        if button_down?(Gosu::KB_SPACE) 
+            bullet = @ship.shoot
+            @bullets << bullet if bullet 
+        end
+
+        @bullets.each { |bullet| bullet.update}
     end
 
     def draw
