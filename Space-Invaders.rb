@@ -32,7 +32,6 @@ class Bullet
         @image = Gosu::Image.new("img/bullet.png")
         @x = ship.x
         @y = ship.y
-
     end
 
     def update
@@ -42,31 +41,62 @@ class Bullet
     def draw
         @image.draw(@x, @y, 0)
     end
+end
 
+class Enemy
+    def initialize(x, y)
+        @x = x
+        @y = y
+        @image = Gosu::Image.new("img/alien.png")
+    end
+
+    def update
+        # Här kan vi lägga till logik för att flytta fienderna om vi vill
+    end
+
+    def draw
+        @image.draw(@x, @y, 0)
+    end
 end
 
 class Game < Gosu::Window
-    #Konstruktor
     def initialize
         super 1600, 1000
         self.caption = "Space Invaders"
         @ship = Ship.new(self)
         @bullets = []
-    
+        @enemies = []
+
+        # Generera fiender
+        spawn_enemies
+    end
+
+    def spawn_enemies
+        # Skapa ett grid av fiender
+        6.times do |i|
+            8.times do |n|
+                x = (180 + 75 * n)
+                y = (30 + 45 * i)
+                @enemies << Enemy.new(x, y)
+            end
+        end
     end
 
     def update
         @ship.update(self)
         if button_down?(Gosu::KB_SPACE)
             @bullets << Bullet.new(@ship)
-            
         end
-        @bullets.each { |bullet| bullet.update}
+        @bullets.each { |bullet| bullet.update }
+
+        # Uppdatera fiender (om de ska flyttas, men inget händer just nu)
+        @enemies.each { |enemy| enemy.update }
     end
 
     def draw
         @ship.draw
         @bullets.each { |bullet| bullet.draw }
+        @enemies.each { |enemy| enemy.draw }
     end
 end
 
