@@ -36,8 +36,7 @@ class Bullet
     end
 
     def update
-        @y += 20
-        @sound.play
+        @y -= 20
     end
 
     def draw
@@ -60,8 +59,9 @@ class Game < Gosu::Window
         @ship.update(self)
         if button_down?(Gosu::KB_SPACE)
             @bullets << Bullet.new(@ship)
-
+            
         end
+        @bullets.each { |bullet| bullet.update}
     end
 
     def draw
