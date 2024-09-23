@@ -91,8 +91,8 @@ class Game < Gosu::Window
         # Skapa ett grid av fiender
         6.times do |i|
             8.times do |n|
-                x = (180 + 75 * n)
-                y = (30 + 45 * i)
+                x = (340 + 120 * n)
+                y = (40 + 80 * i)
                 @enemies << Enemy.new(x, y)
             end
         end
