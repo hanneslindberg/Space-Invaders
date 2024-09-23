@@ -46,8 +46,7 @@ class Bullet
         @x = ship.x
         @y = ship.y
 
-        @speed = 2
-
+        @speed = 10
     end
 
     def update
@@ -83,16 +82,16 @@ class Game < Gosu::Window
         @bullets = []
         @enemies = []
 
-        # Generera fiender
+        # Generate enemies
         spawn_enemies
     end
 
     def spawn_enemies
-        # Skapa ett grid av fiender
+        # Create grid
         6.times do |i|
             8.times do |n|
-                x = (180 + 75 * n)
-                y = (30 + 45 * i)
+                x = (180 + 90 * n)
+                y = (30 + 60 * i)
                 @enemies << Enemy.new(x, y)
             end
         end
