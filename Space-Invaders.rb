@@ -41,6 +41,8 @@ class Ship
 end
 
 class Bullet
+    attr_reader :x, :y
+
     def initialize(ship)
         @image = Gosu::Image.new("img/bullet.png")
         @x = ship.x
@@ -53,7 +55,7 @@ class Bullet
     end
 
     def draw
-        @image.draw(@x, @y, 0)
+        @image.draw(@x - @image.width / 2, @y - @image.height / 2, 0)
     end
 end
 
@@ -96,7 +98,7 @@ class Enemy
     end
 
     def draw
-        @image.draw(@x, @y, 0)
+        @image.draw(@x - @image.width / 2, @y - @image.height / 2, 0)
     end
 end
 
@@ -104,6 +106,8 @@ class Game < Gosu::Window
     def initialize
         super 1600, 1000
         self.caption = "Space Invaders"
+        @game_start = false 
+
         @ship = Ship.new(self)
         @bullets = []
         @enemies = []
@@ -111,12 +115,10 @@ class Game < Gosu::Window
         @last_shooter_time = Time.now # Track time for the last shooter
         @enemy_shoot_cooldown = 2 # Cooldown time before another enemy can shoot
 
-        # Generate enemies
         spawn_enemies
     end
 
     def spawn_enemies
-        # Create grid
         6.times do |i|
             8.times do |n|
                 x = (180 + 130 * n)
@@ -129,6 +131,11 @@ class Game < Gosu::Window
     def front_enemies
         # Group enemies by their X position (columns), and select the one with the highest Y (frontmost)
         front_enemies = []
+    end
+
+    def update
+
+        @ship.update(self)
 
         @enemies.group_by { |enemy| enemy.x }.each_value do |column_enemies|
             front_enemy = column_enemies.max_by { |enemy| enemy.y } # Select enemy with largest y (front)
@@ -168,6 +175,24 @@ class Game < Gosu::Window
             @last_shooter_time = current_time
             @enemy_shoot_cooldown = rand(2..5) # Cooldown can vary between 2 to 5 seconds
         end
+        @bullets.each(&:update)
+
+        @enemies.each(&:update)
+
+        @enemies.reject! do |enemy|
+            @bullets.any? do |bullet|
+                if collision?(bullet, enemy)
+                    @bullets.delete(bullet) 
+                    true 
+                end
+            end
+        end
+    end
+
+    def collision?(a, b)
+        distance = Gosu.distance(a.x, a.y, b.x, b.y)
+        distance < 50
+
     end
 
     def draw
