@@ -66,7 +66,7 @@ class Enemy
     end
 
     def update
-        # Här kan vi lägga till logik för att flytta fienderna om vi vill
+        
     end
 
     def draw
@@ -106,7 +106,9 @@ class Game < Gosu::Window
             @bullets << bullet if bullet 
         end
 
-        @bullets.each { |bullet| bullet.update}
+        @bullets.each { |bullet| bullet.update }
+
+        @enemies.each(&:update)
     end
 
     def draw
