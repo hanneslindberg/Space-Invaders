@@ -17,12 +17,12 @@ class Ship
 
     def shoot
         current_time = Time.now
-        if current_time - @last_shot_time >= @shot_cooldown 
+        if current_time - @last_shot_time >= @shot_cooldown
             @last_shot_time = current_time
-            @sound.play 
-            return Bullet.new(self)  
+            @sound.play
+            return Bullet.new(self)
         else
-            return nil 
+            return nil
         end
     end
 
@@ -45,7 +45,6 @@ class Bullet
         @image = Gosu::Image.new("img/bullet.png")
         @x = ship.x
         @y = ship.y
-
         @speed = 10
     end
 
@@ -58,15 +57,42 @@ class Bullet
     end
 end
 
+class EnemyBullet
+    def initialize(x, y)
+        @image = Gosu::Image.new("img/enemy_bullet.png") # Use a different image for enemy bullets if needed
+        @x = x
+        @y = y
+        @speed = 5 # Enemy bullets move slower than player bullets
+    end
+
+    def update
+        @y += @speed # Move the bullet downwards
+    end
+
+    def draw
+        @image.draw(@x, @y, 0)
+    end
+end
+
 class Enemy
+    attr_reader :x, :y
+
     def initialize(x, y)
         @x = x
         @y = y
         @image = Gosu::Image.new("img/alien.png")
+        @shoot_cooldown = rand(3..10) # Random time between shots
+        @last_shot_time = Time.now
     end
 
-    def update
-        # Här kan vi lägga till logik för att flytta fienderna om vi vill
+    def shoot
+        current_time = Time.now
+        if current_time - @last_shot_time >= @shoot_cooldown
+            @last_shot_time = current_time
+            @shoot_cooldown = rand(2..5) # Reset cooldown after shooting
+            return EnemyBullet.new(@x, @y)
+        end
+        return nil
     end
 
     def draw
@@ -81,6 +107,9 @@ class Game < Gosu::Window
         @ship = Ship.new(self)
         @bullets = []
         @enemies = []
+        @enemy_bullets = [] # Track enemy bullets
+        @last_shooter_time = Time.now # Track time for the last shooter
+        @enemy_shoot_cooldown = 2 # Cooldown time before another enemy can shoot
 
         # Generate enemies
         spawn_enemies
@@ -90,32 +119,65 @@ class Game < Gosu::Window
         # Create grid
         6.times do |i|
             8.times do |n|
-                x = (180 + 90 * n)
-                y = (30 + 60 * i)
-                y = (40 + 80 * i)
-
+                x = (180 + 130 * n)
+                y = (30 + 90 * i)
                 @enemies << Enemy.new(x, y)
             end
         end
     end
 
-    def update
-        @ship.update(self)
+    def front_enemies
+        # Group enemies by their X position (columns), and select the one with the highest Y (frontmost)
+        front_enemies = []
 
-        if button_down?(Gosu::KB_SPACE) 
-            bullet = @ship.shoot
-            @bullets << bullet if bullet 
+        @enemies.group_by { |enemy| enemy.x }.each_value do |column_enemies|
+            front_enemy = column_enemies.max_by { |enemy| enemy.y } # Select enemy with largest y (front)
+            front_enemies << front_enemy if front_enemy # Add to the front enemies list
         end
 
-        @bullets.each { |bullet| bullet.update}
+        front_enemies
+    end
+
+    def update
+        @ship.update(self)
+    
+        # Player shooting
+        if button_down?(Gosu::KB_SPACE)
+            bullet = @ship.shoot
+            @bullets << bullet if bullet
+        end
+    
+        # Update player bullets
+        @bullets.each { |bullet| bullet.update }
+    
+        # Update enemy bullets
+        @enemy_bullets.each { |enemy_bullet| enemy_bullet.update }
+    
+        # Only allow frontmost aliens to shoot
+        current_time = Time.now
+        if current_time - @last_shooter_time >= @enemy_shoot_cooldown
+            # Get the list of frontmost enemies
+            front_enemies_list = front_enemies
+            
+            # Pick one random front enemy to shoot
+            shooting_enemy = front_enemies_list.sample
+            enemy_bullet = shooting_enemy.shoot if shooting_enemy
+            @enemy_bullets << enemy_bullet if enemy_bullet
+            
+            # Reset the time for the next shot and randomize the cooldown period
+            @last_shooter_time = current_time
+            @enemy_shoot_cooldown = rand(2..5) # Cooldown can vary between 2 to 5 seconds
+        end
     end
 
     def draw
         @ship.draw
         @bullets.each { |bullet| bullet.draw }
+        @enemy_bullets.each { |enemy_bullet| enemy_bullet.draw }
         @enemies.each { |enemy| enemy.draw }
     end
 end
+
 
 game = Game.new
 game.show
