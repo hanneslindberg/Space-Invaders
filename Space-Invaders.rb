@@ -66,7 +66,7 @@ class Enemy
     end
 
     def update
-        # Här kan vi lägga till logik för att flytta fienderna om vi vill
+        
     end
 
     def draw
@@ -90,8 +90,7 @@ class Game < Gosu::Window
         # Create grid
         6.times do |i|
             8.times do |n|
-                x = (180 + 90 * n)
-                y = (30 + 60 * i)
+                x = (340 + 120 * n)
                 y = (40 + 80 * i)
 
                 @enemies << Enemy.new(x, y)
@@ -107,7 +106,9 @@ class Game < Gosu::Window
             @bullets << bullet if bullet 
         end
 
-        @bullets.each { |bullet| bullet.update}
+        @bullets.each { |bullet| bullet.update }
+
+        @enemies.each(&:update)
     end
 
     def draw
