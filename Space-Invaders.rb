@@ -12,7 +12,7 @@ class Ship
         @vel_x = 7
         @vel_bullet = 50
         @last_shot_time = Time.now - 1
-        @shot_cooldown = 0.3
+        @shot_cooldown = 0.5
     end
 
     def shoot
@@ -61,14 +61,14 @@ end
 
 class EnemyBullet
     def initialize(x, y)
-        @image = Gosu::Image.new("img/enemy_bullet.png") # Use a different image for enemy bullets if needed
+        @image = Gosu::Image.new("img/enemy_bullet.png")
         @x = x
         @y = y
-        @speed = 5 # Enemy bullets move slower than player bullets
+        @speed = 5
     end
 
     def update
-        @y += @speed # Move the bullet downwards
+        @y += @speed
     end
 
     def draw
@@ -83,7 +83,7 @@ class Enemy
         @x = x
         @y = y
         @image = Gosu::Image.new("img/alien.png")
-        @shoot_cooldown = rand(3..10) # Random time between shots
+        @shoot_cooldown = rand(3..10)
         @last_shot_time = Time.now
     end
 
@@ -91,7 +91,7 @@ class Enemy
         current_time = Time.now
         if current_time - @last_shot_time >= @shoot_cooldown
             @last_shot_time = current_time
-            @shoot_cooldown = rand(2..5) # Reset cooldown after shooting
+            @shoot_cooldown = rand(2..5)
             return EnemyBullet.new(@x, @y)
         end
         return nil
@@ -111,9 +111,9 @@ class Game < Gosu::Window
         @ship = Ship.new(self)
         @bullets = []
         @enemies = []
-        @enemy_bullets = [] # Track enemy bullets
-        @last_shooter_time = Time.now # Track time for the last shooter
-        @enemy_shoot_cooldown = 2 # Cooldown time before another enemy can shoot
+        @enemy_bullets = []
+        @last_shooter_time = Time.now
+        @enemy_shoot_cooldown = 2
 
         spawn_enemies
     end
@@ -129,19 +129,11 @@ class Game < Gosu::Window
     end
 
     def front_enemies
-        # Group enemies by their X position (columns), and select the one with the highest Y (frontmost)
         front_enemies = []
-    end
-
-    def update
-
-        @ship.update(self)
-
         @enemies.group_by { |enemy| enemy.x }.each_value do |column_enemies|
-            front_enemy = column_enemies.max_by { |enemy| enemy.y } # Select enemy with largest y (front)
-            front_enemies << front_enemy if front_enemy # Add to the front enemies list
+            front_enemy = column_enemies.max_by { |enemy| enemy.y }
+            front_enemies << front_enemy if front_enemy
         end
-
         front_enemies
     end
 
@@ -173,17 +165,15 @@ class Game < Gosu::Window
             
             # Reset the time for the next shot and randomize the cooldown period
             @last_shooter_time = current_time
-            @enemy_shoot_cooldown = rand(2..5) # Cooldown can vary between 2 to 5 seconds
+            @enemy_shoot_cooldown = rand(2..5)
         end
-        @bullets.each(&:update)
-
-        @enemies.each(&:update)
-
+    
+        # Update enemies and remove those hit by bullets
         @enemies.reject! do |enemy|
             @bullets.any? do |bullet|
                 if collision?(bullet, enemy)
-                    @bullets.delete(bullet) 
-                    true 
+                    @bullets.delete(bullet)
+                    true
                 end
             end
         end
@@ -192,7 +182,6 @@ class Game < Gosu::Window
     def collision?(a, b)
         distance = Gosu.distance(a.x, a.y, b.x, b.y)
         distance < 50
-
     end
 
     def draw
@@ -202,7 +191,6 @@ class Game < Gosu::Window
         @enemies.each { |enemy| enemy.draw }
     end
 end
-
 
 game = Game.new
 game.show
