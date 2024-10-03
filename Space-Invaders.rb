@@ -55,7 +55,7 @@ class Bullet
     end
 
     def draw
-        @image.draw(@x - @image.width / 2, @y - @image.height / 2, 0)
+        @image.draw(@x + 50, @y - @image.height / 2, 0)
     end
 end
 
