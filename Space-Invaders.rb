@@ -55,11 +55,13 @@ class Bullet
     end
 
     def draw
-        @image.draw(@x + 50, @y - @image.height / 2, 0)
+        @image.draw(@x + @image.width*6, @y - @image.height / 2, 0)
     end
 end
 
 class EnemyBullet
+    attr_reader :x, :y
+
     def initialize(x, y)
         @image = Gosu::Image.new("img/enemy_bullet.png")
         @x = x
@@ -107,6 +109,7 @@ class Game < Gosu::Window
         super 1600, 1000
         self.caption = "Space Invaders"
         @game_start = false 
+        @lives = 3
 
         @ship = Ship.new(self)
         @bullets = []
@@ -116,6 +119,10 @@ class Game < Gosu::Window
         @enemy_shoot_cooldown = 2
 
         spawn_enemies
+    end
+
+    def game_over
+        p "dead"
     end
 
     def spawn_enemies
@@ -135,6 +142,11 @@ class Game < Gosu::Window
             front_enemies << front_enemy if front_enemy
         end
         front_enemies
+    end
+
+    def collision?(a, b)
+        distance = Gosu.distance(a.x, a.y, b.x, b.y)
+        distance < 50
     end
 
     def update
@@ -177,11 +189,18 @@ class Game < Gosu::Window
                 end
             end
         end
-    end
-
-    def collision?(a, b)
-        distance = Gosu.distance(a.x, a.y, b.x, b.y)
-        distance < 50
+        
+        @enemy_bullets.any? do |bullet|
+            if collision?(bullet, @ship)
+                @enemy_bullets.delete(bullet)
+                @lives -= 1
+                p @lives
+                if @lives < 1
+                    game_over()    
+                end           
+                true
+            end
+        end      
     end
 
     def draw
